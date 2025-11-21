@@ -3,6 +3,8 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Features from './components/Features'
 import Products from './components/Products'
+import Gallery from './components/Gallery'
+import CTA from './components/CTA'
 import Footer from './components/Footer'
 
 const TRANSLATIONS = {
@@ -35,6 +37,10 @@ const TRANSLATIONS = {
         { name: 'Dekorasi', desc: 'Hiasan dinding, rak unik, dan aksesoris aesthetic.' },
         { name: 'Kerajinan', desc: 'Souvenir custom bergaya kartun yang lucu.' },
       ],
+    },
+    gallery: {
+      title: 'Galeri Produk & Proses',
+      subtitle: 'Lihat contoh produk dan proses pembuatannya.',
     },
     footer: {
       tagline: 'Memberi nilai pada setiap serat kayu.',
@@ -72,6 +78,10 @@ const TRANSLATIONS = {
         { name: 'Crafts', desc: 'Custom souvenirs with cute cartoon flair.' },
       ],
     },
+    gallery: {
+      title: 'Gallery: Products & Making',
+      subtitle: 'See real products and how they are made.',
+    },
     footer: {
       tagline: 'Adding value to every fiber of wood.',
       cta: 'Chat on WhatsApp Now',
@@ -108,6 +118,10 @@ const TRANSLATIONS = {
         { name: 'حِرَف يدوية', desc: 'هدايا تذكارية مخصصة بطابع كرتوني لطيف.' },
       ],
     },
+    gallery: {
+      title: 'المعرض: المنتجات والعملية',
+      subtitle: 'شاهد المنتجات وكيفية تصنيعها.',
+    },
     footer: {
       tagline: 'نضيف قيمة لكل ألياف الخشب.',
       cta: 'تحدث عبر واتساب الآن',
@@ -121,7 +135,6 @@ export default function App() {
   const t = useMemo(() => TRANSLATIONS[lang], [lang])
 
   useEffect(() => {
-    // Handle RTL for Arabic
     if (lang === 'ar') {
       document.documentElement.dir = 'rtl'
     } else {
@@ -131,13 +144,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      {/* playful cartoon stars background */}
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(251,191,36,0.06),transparent_40%),radial-gradient(circle_at_90%_20%,rgba(56,189,248,0.06),transparent_45%),radial-gradient(circle_at_30%_80%,rgba(186,230,253,0.06),transparent_40%)]" />
 
       <Navbar lang={lang} setLang={setLang} t={t} />
       <Hero t={t} />
       <Features t={t} />
       <Products t={t} />
+      <Gallery t={t} lang={lang} />
+      <CTA t={t} />
       <Footer t={t} />
     </div>
   )
