@@ -1,9 +1,11 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Image as ImageIcon, Hammer } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function Gallery({ t, lang }) {
   const scrollRef = useRef(null)
+  const [current, setCurrent] = useState(0)
+  const [hovered, setHovered] = useState(false)
 
   const slides = useMemo(() => {
     const lbl = {
@@ -46,65 +48,137 @@ export default function Gallery({ t, lang }) {
     ]
   }, [lang])
 
-  const onNav = (dir) => {
+  const getItemWidth = () => {
+    const el = scrollRef.current
+    if (!el || !el.firstChild) return 0
+    const firstCard = el.querySelector('[data-card]')
+    return firstCard ? firstCard.clientWidth + 20 /* gap */ : el.clientWidth
+  }
+
+  const scrollToIndex = (index) => {
     const el = scrollRef.current
     if (!el) return
-    const step = el.clientWidth * 0.9
-    el.scrollBy({ left: dir * step, behavior: 'smooth' })
+    const width = getItemWidth()
+    el.scrollTo({ left: index * width, behavior: 'smooth' })
   }
+
+  const onNav = (dir) => {
+    const next = Math.max(0, Math.min(slides.length - 1, current + dir))
+    setCurrent(next)
+    scrollToIndex(next)
+  }
+
+  // Sync current index with scroll position
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+
+    const onScroll = () => {
+      const width = getItemWidth()
+      if (width > 0) {
+        const idx = Math.round(el.scrollLeft / width)
+        setCurrent(Math.max(0, Math.min(slides.length - 1, idx)))
+      }
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [slides.length])
+
+  // Auto-play slider, pause on hover and respect prefers-reduced-motion
+  useEffect(() => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (hovered || reduce) return
+
+    const id = setInterval(() => {
+      setCurrent((prev) => {
+        const next = prev + 1 >= slides.length ? 0 : prev + 1
+        requestAnimationFrame(() => scrollToIndex(next))
+        return next
+      })
+    }, 4500)
+
+    return () => clearInterval(id)
+  }, [hovered, slides.length])
 
   return (
     <section id="gallery" className="relative py-20 bg-slate-900">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(251,191,36,0.08),transparent_60%)] pointer-events-none" />
       <div className="relative max-w-7xl mx-auto px-6">
-        <div className="flex items-end justify-between gap-6 mb-6">
+        <div className="flex items-end justify-between gap-6 mb-8">
           <div>
-            <h2 className="text-3xl md:text-4xl font-black text-white">{t.gallery?.title || 'Galeri Produk & Proses'}</h2>
-            <p className="mt-2 text-white/70">{t.gallery?.subtitle || 'Lihat contoh produk dan proses pembuatannya.'}</p>
+            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">{t.gallery?.title || 'Galeri Produk & Proses'}</h2>
+            <p className="mt-2 text-white/70 text-base md:text-lg">{t.gallery?.subtitle || 'Lihat contoh produk dan proses pembuatannya.'}</p>
           </div>
           <div className="hidden sm:flex items-center gap-2">
-            <button onClick={() => onNav(-1)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10">
+            <button aria-label="Previous" onClick={() => onNav(-1)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button onClick={() => onNav(1)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10">
+            <button aria-label="Next" onClick={() => onNav(1)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-colors">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div ref={scrollRef} className="overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+        <div
+          ref={scrollRef}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          className="overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+        >
           <div className="flex gap-5 snap-x snap-mandatory">
             {slides.map((s, idx) => (
               <motion.figure
                 key={idx}
+                data-card
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.4, delay: idx * 0.05 }}
-                className="relative min-w-[85%] sm:min-w-[48%] lg:min-w-[32%] snap-start rounded-2xl overflow-hidden border border-white/10 bg-white/5"
+                transition={{ duration: 0.45, delay: idx * 0.05 }}
+                className="relative min-w-[85%] sm:min-w-[52%] lg:min-w-[34%] snap-start rounded-2xl overflow-hidden border border-white/10 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
               >
                 <div className="aspect-[16/10] w-full overflow-hidden">
-                  <img src={s.src} alt={s.caption} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={s.src} alt={s.caption} className="w-full h-full object-cover scale-[1.02] hover:scale-100 transition-transform duration-700 ease-out" loading="lazy" />
+                  {/* gradient overlay bottom */}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/0 to-transparent" />
                 </div>
+
                 <figcaption className="absolute left-3 top-3 flex items-center gap-2">
                   <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-amber-400 text-slate-900 shadow">
                     {s.tag === 'Product' || s.tag === 'Produk' || s.tag === 'المنتج' ? <ImageIcon className="w-3.5 h-3.5"/> : <Hammer className="w-3.5 h-3.5"/>}
                     {s.tag}
                   </span>
                 </figcaption>
-                <div className="p-4">
-                  <div className="text-white text-sm/6 opacity-90">{s.caption}</div>
+
+                <div className="absolute left-4 right-4 bottom-4">
+                  <div className="backdrop-blur-[2px] inline-flex px-3 py-2 rounded-lg bg-black/30 ring-1 ring-white/10">
+                    <div className="text-white text-sm md:text-base font-medium drop-shadow">{s.caption}</div>
+                  </div>
                 </div>
               </motion.figure>
             ))}
           </div>
         </div>
 
+        {/* Dots indicator */}
+        <div className="mt-6 flex items-center justify-center gap-2">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              aria-label={`Go to slide ${i + 1}`}
+              onClick={() => { setCurrent(i); scrollToIndex(i) }}
+              className={`h-2.5 rounded-full transition-all ${
+                current === i ? 'w-6 bg-amber-400' : 'w-2.5 bg-white/30 hover:bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Mobile nav */}
         <div className="mt-6 flex sm:hidden items-center justify-center gap-3">
-          <button onClick={() => onNav(-1)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10">
+          <button aria-label="Previous" onClick={() => onNav(-1)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <button onClick={() => onNav(1)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10">
+          <button aria-label="Next" onClick={() => onNav(1)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10">
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
