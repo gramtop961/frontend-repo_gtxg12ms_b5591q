@@ -84,10 +84,11 @@ export default function Gallery({ t, lang }) {
     return () => el.removeEventListener('scroll', onScroll)
   }, [slides.length])
 
-  // Auto-play slider, pause on hover and respect prefers-reduced-motion
+  // Auto-play slider, pause on hover and respect prefers-reduced-motion or save-data
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (hovered || reduce) return
+    const saveData = navigator.connection && navigator.connection.saveData
+    if (hovered || reduce || saveData) return
 
     const id = setInterval(() => {
       setCurrent((prev) => {
@@ -123,21 +124,31 @@ export default function Gallery({ t, lang }) {
           ref={scrollRef}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
-          className="overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+          className="overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent will-change-scroll"
         >
           <div className="flex gap-5 snap-x snap-mandatory">
             {slides.map((s, idx) => (
               <motion.figure
                 key={idx}
                 data-card
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.45, delay: idx * 0.05 }}
+                transition={{ duration: 0.35, delay: idx * 0.05 }}
                 className="relative min-w-[85%] sm:min-w-[52%] lg:min-w-[34%] snap-start rounded-2xl overflow-hidden border border-white/10 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
               >
                 <div className="aspect-[16/10] w-full overflow-hidden">
-                  <img src={s.src} alt={s.caption} className="w-full h-full object-cover scale-[1.02] hover:scale-100 transition-transform duration-700 ease-out" loading="lazy" />
+                  <img
+                    src={s.src}
+                    alt={s.caption}
+                    className="w-full h-full object-cover scale-[1.02] hover:scale-100 transition-transform duration-700 ease-out"
+                    loading="lazy"
+                    decoding="async"
+                    sizes="(max-width: 640px) 85vw, (max-width: 1024px) 52vw, 34vw"
+                    width="1600"
+                    height="1000"
+                    fetchpriority="low"
+                  />
                   {/* gradient overlay bottom */}
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/0 to-transparent" />
                 </div>

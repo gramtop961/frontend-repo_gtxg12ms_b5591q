@@ -1,10 +1,10 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect, lazy, Suspense } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Features from './components/Features'
 import Products from './components/Products'
-import Gallery from './components/Gallery'
+const Gallery = lazy(() => import('./components/Gallery'))
 import CTA from './components/CTA'
 import Footer from './components/Footer'
 
@@ -200,7 +200,9 @@ export default function App() {
           <Hero t={t} />
           <Features t={t} />
           <Products t={t} />
-          <Gallery t={t} lang={lang} />
+          <Suspense fallback={<section className="py-20 bg-slate-900"><div className="max-w-7xl mx-auto px-6"><div className="h-48 rounded-2xl bg-white/5 border border-white/10 animate-pulse"/></div></section>}>
+            <Gallery t={t} lang={lang} />
+          </Suspense>
           <CTA t={t} />
           <Footer t={t} />
         </motion.main>

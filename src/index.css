@@ -54,4 +54,10 @@
     --tw-exit-translate-x: initial;
     --tw-exit-translate-y: initial;
   }
+
+  /* Performance: avoid rendering off-screen sections until needed */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 600px 1000px;
+  }
 }

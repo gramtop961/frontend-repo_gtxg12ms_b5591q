@@ -11,7 +11,7 @@ const items = (t) => [
 
 export default function Features({ t }) {
   return (
-    <section id="features" className="relative py-20 bg-slate-900">
+    <section id="features" className="relative py-20 bg-slate-900 cv-auto">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(251,191,36,0.08),transparent_60%)] pointer-events-none" />
       <div className="relative max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
@@ -22,11 +22,11 @@ export default function Features({ t }) {
           {items(t).map((it, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.4, delay: idx * 0.1 }}
-              className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur hover:bg-white/10 transition-colors"
+              transition={{ duration: 0.35, delay: idx * 0.08 }}
+              className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur hover:bg-white/10 transition-colors will-change-transform"
             >
               <it.icon className="w-8 h-8 text-amber-400" />
               <h3 className="mt-4 text-lg font-bold text-white">{it.title}</h3>

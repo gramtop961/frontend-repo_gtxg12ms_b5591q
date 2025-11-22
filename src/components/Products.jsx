@@ -4,13 +4,13 @@ import { motion } from 'framer-motion'
 export default function Products({ t }) {
   const products = t.products.items
   const images = [
-    'https://images.unsplash.com/photo-1523419409543-a2f07a5160e8?auto=format&fit=crop&w=1600&q=60', // furniture/workbench
-    'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1600&q=60', // decor rack
-    'https://images.unsplash.com/photo-1516383607781-913a19294fd1?auto=format&fit=crop&w=1600&q=60', // crafts detail
+    'https://images.unsplash.com/photo-1523419409543-a2f07a5160e8?auto=format&fit=crop&w=1200&q=60',
+    'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1200&q=60',
+    'https://images.unsplash.com/photo-1516383607781-913a19294fd1?auto=format&fit=crop&w=1200&q=60',
   ]
 
   return (
-    <section id="products" className="relative py-20 bg-slate-950">
+    <section id="products" className="relative py-20 bg-slate-950 cv-auto">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(251,191,36,0.06),transparent_60%)] pointer-events-none" />
       <div className="relative max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
@@ -20,13 +20,24 @@ export default function Products({ t }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((p, i) => (
             <motion.div key={i}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="rounded-2xl overflow-hidden bg-white/5 border border-white/10">
+              transition={{ duration: 0.35, delay: i * 0.08 }}
+              className="rounded-2xl overflow-hidden bg-white/5 border border-white/10"
+            >
               <div className="relative aspect-video">
-                <img src={images[i % images.length]} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                <img
+                  src={images[i % images.length]}
+                  alt={p.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  width="1200"
+                  height="675"
+                  fetchpriority="low"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
               </div>
               <div className="p-5">
