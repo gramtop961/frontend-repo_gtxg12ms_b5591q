@@ -15,10 +15,21 @@
   html {
     font-family: var(--font-sans);
     font-feature-settings: "rlig" 1, "calt" 1;
+    scroll-behavior: smooth;
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
   }
 
   body {
     @apply antialiased;
+  }
+
+  /* Provide offset for anchored scrolling so sections aren't hidden under navbar */
+  section[id] {
+    scroll-margin-top: 96px; /* ~navbar height */
   }
 }
 

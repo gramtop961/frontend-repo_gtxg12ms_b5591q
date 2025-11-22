@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Features from './components/Features'
@@ -142,17 +143,68 @@ export default function App() {
     }
   }, [lang])
 
+  // Ultra-smooth scroll for in-page anchors with easing and navbar offset
+  useEffect(() => {
+    const links = Array.from(document.querySelectorAll('a[href^="#"]'))
+
+    const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+
+    const smoothScrollTo = (targetY, duration = 800) => {
+      const startY = window.scrollY || window.pageYOffset
+      const diff = targetY - startY
+      if (diff === 0) return
+      const start = performance.now()
+
+      const step = (now) => {
+        const elapsed = now - start
+        const progress = Math.min(elapsed / duration, 1)
+        const eased = easeInOutCubic(progress)
+        window.scrollTo(0, startY + diff * eased)
+        if (progress < 1) requestAnimationFrame(step)
+      }
+      requestAnimationFrame(step)
+    }
+
+    const onClick = (e) => {
+      const href = e.currentTarget.getAttribute('href')
+      if (!href || href === '#' || !href.startsWith('#')) return
+      const id = href.slice(1)
+      const target = document.getElementById(id)
+      if (!target) return
+      e.preventDefault()
+      const navbarOffset = 88
+      const rect = target.getBoundingClientRect()
+      const absoluteY = rect.top + window.pageYOffset - navbarOffset
+      smoothScrollTo(absoluteY, 850)
+    }
+
+    links.forEach((a) => a.addEventListener('click', onClick))
+    return () => links.forEach((a) => a.removeEventListener('click', onClick))
+  }, [])
+
   return (
     <div className="min-h-screen bg-slate-950">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(251,191,36,0.06),transparent_40%),radial-gradient(circle_at_90%_20%,rgba(56,189,248,0.06),transparent_45%),radial-gradient(circle_at_30%_80%,rgba(186,230,253,0.06),transparent_40%)]" />
 
       <Navbar lang={lang} setLang={setLang} t={t} />
-      <Hero t={t} />
-      <Features t={t} />
-      <Products t={t} />
-      <Gallery t={t} lang={lang} />
-      <CTA t={t} />
-      <Footer t={t} />
+
+      {/* Language transition wrapper: crossfade + slight slide */}
+      <AnimatePresence mode="wait">
+        <motion.main
+          key={lang}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+        >
+          <Hero t={t} />
+          <Features t={t} />
+          <Products t={t} />
+          <Gallery t={t} lang={lang} />
+          <CTA t={t} />
+          <Footer t={t} />
+        </motion.main>
+      </AnimatePresence>
     </div>
   )
 }
